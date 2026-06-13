@@ -4,14 +4,24 @@
     "description": "squan helper toolkit",
     "type": "module",
     "main": "./squanlib.js",
+    "module": "./squanlib.js",
+    "browser": "./dist/squanlib.umd.min.js",
+    "unpkg": "./dist/squanlib.umd.min.js",
+    "jsdelivr": "./dist/squanlib.umd.min.js",
     "exports": {
-        ".": "./squanlib.js"
+        ".": {
+            "import": "./squanlib.js",
+            "default": "./dist/squanlib.umd.js"
+        }
     },
     "files": [
-        "squanlib.js"
+        "squanlib.js",
+        "dist/"
     ],
     "sideEffects": false,
     "scripts": {
+        "build": "node node_modules/rollup/dist/bin/rollup -c",
+        "prepublishOnly": "npm run build",
         "test": "node --test"
     },
     "keywords": [
@@ -26,5 +36,9 @@
         "type": "git",
         "url": "git+https://github.com/Mattttttttttttttttttttttttttttttt/squan-lib.git"
     },
-    "license": "GPL-3.0-or-later"
+    "license": "GPL-3.0-or-later",
+    "devDependencies": {
+        "@rollup/plugin-terser": "^1.0.0",
+        "rollup": "^4.61.1"
+    }
 }
