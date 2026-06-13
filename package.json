@@ -1,0 +1,30 @@
+{
+    "name": "squanlib",
+    "version": "1.0.0",
+    "description": "squan helper toolkit",
+    "type": "module",
+    "main": "./squanlib.js",
+    "exports": {
+        ".": "./squanlib.js"
+    },
+    "files": [
+        "squanlib.js"
+    ],
+    "sideEffects": false,
+    "scripts": {
+        "test": "node --test"
+    },
+    "keywords": [
+        "square-1",
+        "squan",
+        "cubing",
+        "karn",
+        "wca",
+        "notation"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Mattttttttttttttttttttttttttttttt/squan-lib.git"
+    },
+    "license": "GPL-3.0-or-later"
+}
