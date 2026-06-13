@@ -5,7 +5,7 @@
 export default class SquanLib {
 
     // =========================================================================
-    // SECTION 1 — DATA TABLES
+    // SECTION 1: DATA TABLES
     // =========================================================================
 
     // -------------------------------------------------------------------------
@@ -129,7 +129,7 @@ export default class SquanLib {
     ]);
 
     // -------------------------------------------------------------------------
-    // wcaToBaseKarn — maps single WCA move → base karn.
+    // wcaToBaseKarn: maps single WCA move → base karn.
     // -------------------------------------------------------------------------
     static wcaToBaseKarn = {
         // ── compound numeric → single karn ────────────────────────────────────
@@ -157,7 +157,7 @@ export default class SquanLib {
     };
 
     // -------------------------------------------------------------------------
-    // baseKarnToHighKarn — longest first, base karn → high karn
+    // baseKarnToHighKarn: longest first, base karn → high karn
     // -------------------------------------------------------------------------
     static baseKarnToHighKarn = {
         "U U' U U'": "U4", "U' U U' U": "U4'",
@@ -183,8 +183,8 @@ export default class SquanLib {
     };
 
     /**
-     * A_MOVES — legal moves available for top misalign
-     * a_MOVES — legal moves available for bottom misalign
+     * A_MOVES: legal moves available for top misalign
+     * a_MOVES: legal moves available for bottom misalign
      */
     static A_MOVES = [
         [3, 0], [-3, 0], [0, 3], [0, -3], [3, 3],
@@ -196,7 +196,7 @@ export default class SquanLib {
     ];
 
     /**
-     * OPTIM — table for optimizable moves
+     * OPTIM: table for optimizable moves
      */
     static OPTIM = {
         // special case
@@ -214,7 +214,7 @@ export default class SquanLib {
     };
 
     /**
-     * CLOSEST_MAP — maps a -5~6 turn to the its closest 3n move
+     * CLOSEST_MAP: maps a -5~6 turn to the its closest 3n move
      */
     static CLOSEST_MAP = new Map([
         [-5, -6], [-4, -3], [-3, -3], [-2, -3], [-1, 0], [0, 0],
@@ -222,7 +222,7 @@ export default class SquanLib {
     ]);
 
     /**
-     * MOVE_VALUES — lookup table for the ergonomic rating of each individual move.
+     * MOVE_VALUES: lookup table for the ergonomic rating of each individual move.
      *   A = 10, a = 0-1
      *   / = upslice, \ = downslice
      */
@@ -247,7 +247,7 @@ export default class SquanLib {
         ['a\\3,0', 16], ['a\\3,3', 11], ['a\\3,6', 4], ['a\\3,-3', 6],
         ['a\\6,0', 4], ['a\\6,3', 2], ['a\\6,6', 0], ['a\\6,-3', 1],
         ['a\\-3,0', 15], ['a\\-3,3', 10], ['a\\-3,6', 2], ['a\\-3,-3', 5],
-        // fractional (non-multiple-of-3) moves — alignment prefix omitted
+        // fractional (non-multiple-of-3) moves: alignment prefix omitted
         ['/1,-2', 4], ['\\1,-2', 17], ['/-1,2', 15], ['\\-1,2', 14],
         ['/1,-5', 3], ['\\1,-5', 1], ['/-1,5', 8], ['\\-1,5', 3],
         ['/1,4', 7], ['\\1,4', 14], ['/-1,-4', 12], ['\\-1,-4', 9],
@@ -267,7 +267,266 @@ export default class SquanLib {
     ]);
 
     /**
-     * @param {object} [tempReplacements] — initial manual unkarnifications.
+     * GOOD_FINISHES: moves that are acceptable as the last move
+     */
+    static GOOD_FINISHES = new Set([
+        "11", "-1-1", "22", "-2-2", "2-1", "-21", "1-2", "-12",
+        "30", "-30", "03", "0-3", "33", "3-3", "-3-3", "-33",
+        "41", "-4-1", "14", "-1-4", "2-4", "-24", "4-2", "-42",
+        "5-1", "-51", "-45", "-54", "63",
+    ]);
+
+    /**
+     * OBLToEnglish: maps CSP-style hex into OBL names
+     * (format is 24-character string, both corner first, STARTING FROM TOP RIGHT OF SLICE
+     * meaning: 0-1 is the solved position. **the order is like CSP tracing.**)
+     */
+    static OBLToEnglish = {
+        'BBbBBbBBbBBb': 'solved',
+        'BBwWWwWWwWWw': '1c',
+        'BBwBBwWWwWWw': 'cadj',
+        'BBwWWwBBwWWw': 'copp',
+        'BBwBBwBBwWWw': '3c',
+        'BBwBBwBBwBBw': '4e',
+        'WWbWWbWWbWWw': '3e',
+        'WWbWWwWWbWWw': 'line',
+        'WWbWWbWWwWWw': 'L',
+        'WWbWWwWWwWWw': '1e',
+        'WWbBBwWWwWWw': 'left pair', 'BBbWWwWWwWWw': 'right pair',
+        'BBwWWwWWbWWw': 'left arrow', 'BBwWWbWWwWWw': 'right arrow',
+        'WWbBBbWWwWWw': 'gem',
+        'WWwWWbWWbBBw': 'left knight', 'BBbWWbWWwWWw': 'right knight',
+        'WWwWWbWWwBBb': 'left axe', 'BBwWWbWWwWWb': 'right axe',
+        'BBwWWbWWbWWw': 'squid',
+        'WWwWWbBBbWWb': 'left thumb', 'WWbBBbWWwWWb': 'right thumb',
+        'WWwBBbWWbWWb': 'left bunny', 'WWbWWbBBwWWb': 'right bunny',
+        'BBbBBwWWwWWw': 'shell',
+        'BBwWWwWWbBBw': 'left bird', 'BBwBBbWWwWWw': 'right bird',
+        'BBwWWbWWwBBw': 'hazard',
+        'BBbBBbWWwWWw': 'left kite', 'WWwWWbBBbBBw': 'right kite',
+        'BBwBBwWWbWWb': 'left cut', 'BBwBBbWWbWWw': 'right cut',
+        'BBbBBwWWbWWw': 'black T', 'WWwWWbBBwBBb': 'white T',
+        'WWbBBwWWbBBw': 'left N', 'WWwBBbWWwBBb': 'right N',
+        'WWbBBbWWwBBw': 'black tie', 'BBwWWwBBbWWb': 'white tie',
+        'BBbWWwBBwWWw': 'left yoshi', 'WWwBBwWWbBBw': 'right yoshi'
+    };
+
+    static OBLToState = Object.fromEntries(
+        Object.entries(this.OBLToEnglish).map(([key, value]) => [value, key])
+    );
+
+    /**
+     * NAMING: matt's OBL naming
+     */
+    static NAMING = {
+        "solved": "O", "1c": "D", "cadj": "J", "copp": "V", "3c": "M", "4e": "Q",
+        "3e": "W", "line": "F", "L": "L", "1e": "E", "left pair": "Pw", "right pair": "Pc",
+        "left arrow": "Aw", "right arrow": "Ac", "gem": "G", "left knight": "Hw",
+        "right knight": "Hc", "left axe": "Xc", "right axe": "Xw", "squid": "S",
+        "left thumb": "THw", "right thumb": "THc", "left bunny": "Uc", "right bunny": "Uw",
+        "shell": "SH", "left bird": "Bc", "right bird": "Bw", "hazard": "Z",
+        "left kite": "Kc", "right kite": "Kw", "left cut": "Cw", "right cut": "Cc",
+        "black T": "Tu", "white T": "Td", "left N": "Nw", "right N": "Nc",
+        "black tie": "Iu", "white tie": "Id", "left yoshi": "Yc", "right yoshi": "Yw"
+    };
+
+    /**
+     * OBL_ANGLES: the starting angle, logged in PATTERNS
+     */
+    static OBL_ANGLES = {
+        "solved": "-", "1c": "UR", "cadj": "R",
+        "copp": "/", "3c": "DR", "4e": "-",
+        "3e": "D", "line": "—", "L": "DR",
+        "1e": "R", "left pair": "DR", "right pair": "UR",
+        "left arrow": "UR", "right arrow": "UR",
+        "gem": "DR", "left knight": "L", "right knight": "R",
+        "left axe": "L", "right axe": "R", "squid": "UR",
+        "left thumb": "DL", "right thumb": "DR",
+        "left bunny": "DR", "right bunny": "DL",
+        "shell": "R", "left bird": "R", "right bird": "U",
+        "hazard": "U", "left kite": "R", "right kite": "L",
+        "left cut": "R", "right cut": "R",
+        "black T": "R", "white T": "R",
+        "left N": "\\", "right N": "\\",
+        "black tie": "DR", "white tie": "DR",
+        "left yoshi": "UL", "right yoshi": "UR"
+    };
+
+    static nextAngle = {
+        // Single character angles
+        "-": "-", "/": "\\", "\\": "/", "—": "|", "|": "—",
+        "U": "R", "R": "D", "D": "L", "L": "U",
+        // Double character angles
+        "UR": "DR", "DR": "DL", "DL": "UL", "UL": "UR"
+    };
+
+    static get HALF_L() { return 6; }
+    static get LAYERL() { return 12; }
+    static get THREE_FOUR_L() { return 18; }
+    static get CUBEL() { return 24; }
+    static get SOLVED() { return "bBBbBBbBBbBBwWWwWWwWWwWW"; }
+
+    /**
+     * POSSIBLE_OBL: every OBL case as [specifier, U, D].
+     */
+    static POSSIBLE_OBL = [
+        ['', 'solved', 'solved'],
+        ['', '1c', '1c'], ['', 'cadj', 'cadj'], ['', 'cadj', 'copp'], ['', 'copp', 'copp'],
+        ['', '3c', '3c'], ['', '4e', '4e'], ['', '3e', '3e'], ['', 'line', 'line'],
+        ['', 'L', 'line'], ['', 'L', 'L'], ['', '1e', '1e'],
+        ['good', 'pair', 'pair'], ['bad', 'pair', 'pair'],
+        ['good', 'arrow', 'pair'], ['bad', 'arrow', 'pair'],
+        ['good', 'arrow', 'arrow'], ['bad', 'arrow', 'arrow'],
+        ['', 'gem', 'gem'], ['', 'gem', 'knight'], ['', 'gem', 'axe'], ['', 'gem', 'squid'],
+        ['good', 'knight', 'knight'], ['bad', 'knight', 'knight'],
+        ['good', 'knight', 'axe'], ['bad', 'knight', 'axe'],
+        ['same', 'axe', 'axe'], ['diff', 'axe', 'axe'],
+        ['', 'squid', 'knight'], ['', 'squid', 'axe'], ['', 'squid', 'squid'],
+        ['good', 'thumb', 'thumb'], ['bad', 'thumb', 'thumb'],
+        ['good', 'thumb', 'bunny'], ['bad', 'thumb', 'bunny'],
+        ['good', 'bunny', 'bunny'], ['bad', 'bunny', 'bunny'],
+        ['', 'shell', 'shell'], ['', 'shell', 'bird'], ['', 'shell', 'hazard'],
+        ['', 'yoshi', 'shell'],
+        ['good', 'bird', 'bird'], ['bad', 'bird', 'bird'],
+        ['', 'bird', 'hazard'], ['', 'hazard', 'hazard'],
+        ['good', 'yoshi', 'bird'], ['bad', 'yoshi', 'bird'],
+        ['', 'yoshi', 'hazard'], ['same', 'yoshi', 'yoshi'], ['diff', 'yoshi', 'yoshi'],
+        ['good', 'kite', 'kite'], ['bad', 'kite', 'kite'],
+        ['good', 'kite', 'cut'], ['bad', 'kite', 'cut'],
+        ['', 'kite', 'T'], ['good', 'kite', 'N'], ['bad', 'kite', 'N'], ['', 'kite', 'tie'],
+        ['', 'cut', 'T'], ['good', 'cut', 'N'], ['bad', 'cut', 'N'], ['', 'cut', 'tie'],
+        ['good', 'cut', 'cut'], ['bad', 'cut', 'cut'],
+        ['good', 'T', 'T'], ['bad', 'T', 'T'], ['', 'T', 'N'],
+        ['good', 'T', 'tie'], ['bad', 'T', 'tie'],
+        ['good', 'N', 'N'], ['bad', 'N', 'N'], ['', 'tie', 'N'],
+        ['good', 'tie', 'tie'], ['bad', 'tie', 'tie']
+    ];
+
+    /**
+     * OBL_LEN: optimal slicecount of each OBL
+     */
+    static OBL_LEN = {
+        "solved/solved": 0, "1c/1c": 5, "cadj/cadj": 4, "cadj/copp": 5, "copp/copp": 2,
+        "3c/3c": 5, "4e/4e": 4, "3e/3e": 5, "line/line": 2, "L/line": 5, "L/L": 4, "1e/1e": 5,
+        "good pair/pair": 2, "bad pair/pair": 4, "good arrow/pair": 3, "bad arrow/pair": 4,
+        "good arrow/arrow": 3, "bad arrow/arrow": 4, "gem/gem": 4, "gem/knight": 4,
+        "gem/axe": 3, "gem/squid": 4, "good knight/knight": 4, "bad knight/knight": 5,
+        "good knight/axe": 3, "bad knight/axe": 4, "same axe/axe": 5, "diff axe/axe": 5,
+        "squid/knight": 4, "squid/axe": 4, "squid/squid": 5, "good thumb/thumb": 2,
+        "bad thumb/thumb": 5, "good thumb/bunny": 4, "bad thumb/bunny": 4,
+        "good bunny/bunny": 3, "bad bunny/bunny": 5, "shell/shell": 4, "shell/bird": 4,
+        "shell/hazard": 4, "yoshi/shell": 3, "good bird/bird": 4, "bad bird/bird": 5,
+        "bird/hazard": 4, "hazard/hazard": 5, "good yoshi/bird": 3, "bad yoshi/bird": 4,
+        "yoshi/hazard": 4, "same yoshi/yoshi": 5, "diff yoshi/yoshi": 5,
+        "good kite/kite": 1, "bad kite/kite": 5, "good kite/cut": 3, "bad kite/cut": 6,
+        "kite/T": 4, "good kite/N": 3, "bad kite/N": 4, "kite/tie": 4, "cut/T": 4,
+        "good cut/N": 4, "bad cut/N": 5, "cut/tie": 4, "good cut/cut": 3, "bad cut/cut": 6,
+        "good T/T": 3, "bad T/T": 4, "T/N": 5, "good T/tie": 3, "bad T/tie": 4,
+        "good N/N": 2, "bad N/N": 4, "tie/N": 5, "good tie/tie": 3, "bad tie/tie": 4
+    };
+
+    /**
+     * OBL_TRANSLATION: map nonspecific OBL to specific OBLs without layer flips
+     */
+    static OBL_TRANSLATION = {
+        'solved/solved': ['solved/solved'],
+        '1c/1c': ['1c/1c'],
+        'cadj/cadj': ['cadj/cadj'],
+        'cadj/copp': ['cadj/copp'],
+        'copp/copp': ['copp/copp'],
+        '3c/3c': ['3c/3c'],
+        '4e/4e': ['4e/4e'],
+        '3e/3e': ['3e/3e'],
+        'line/line': ['line/line'],
+        'L/line': ['L/line'],
+        'L/L': ['L/L'],
+        '1e/1e': ['1e/1e'],
+        'good pair/pair': ['left pair/left pair', 'right pair/right pair'],
+        'bad pair/pair': ['left pair/right pair'],
+        'good arrow/pair': ['left arrow/right pair', 'right arrow/left pair'],
+        'bad arrow/pair': ['left arrow/left pair', 'right arrow/right pair'],
+        'good arrow/arrow': ['left arrow/left arrow', 'right arrow/right arrow'],
+        'bad arrow/arrow': ['left arrow/right arrow'],
+        'gem/gem': ['gem/gem'],
+        'gem/knight': ['gem/left knight', 'gem/right knight'],
+        'gem/axe': ['gem/left axe', 'gem/right axe'],
+        'gem/squid': ['gem/squid'],
+        'good knight/knight': ['left knight/right knight'],
+        'bad knight/knight': ['left knight/left knight', 'right knight/right knight'],
+        'good knight/axe': ['left knight/left axe', 'right knight/right axe'],
+        'bad knight/axe': ['left knight/right axe', 'right knight/left axe'],
+        'same axe/axe': ['left axe/left axe', 'right axe/right axe'],
+        'diff axe/axe': ['left axe/right axe'],
+        'squid/knight': ['squid/left knight', 'squid/right knight'],
+        'squid/axe': ['squid/left axe', 'squid/right axe'],
+        'squid/squid': ['squid/squid'],
+        'good thumb/thumb': ['left thumb/left thumb', 'right thumb/right thumb'],
+        'bad thumb/thumb': ['left thumb/right thumb'],
+        'good thumb/bunny': ['left thumb/right bunny', 'right thumb/left bunny'],
+        'bad thumb/bunny': ['left thumb/left bunny', 'right thumb/right bunny'],
+        'good bunny/bunny': ['left bunny/left bunny', 'right bunny/right bunny'],
+        'bad bunny/bunny': ['left bunny/right bunny'],
+        'shell/shell': ['shell/shell'],
+        'shell/bird': ['shell/left bird', 'shell/right bird'],
+        'shell/hazard': ['shell/hazard'],
+        'yoshi/shell': ['left yoshi/shell', 'right yoshi/shell'],
+        'good bird/bird': ['left bird/right bird'],
+        'bad bird/bird': ['left bird/left bird', 'right bird/right bird'],
+        'bird/hazard': ['left bird/hazard', 'right bird/hazard'],
+        'hazard/hazard': ['hazard/hazard'],
+        'good yoshi/bird': ['left yoshi/left bird', 'right yoshi/right bird'],
+        'bad yoshi/bird': ['left yoshi/right bird', 'right yoshi/left bird'],
+        'yoshi/hazard': ['left yoshi/hazard', 'right yoshi/hazard'],
+        'same yoshi/yoshi': ['left yoshi/left yoshi', 'right yoshi/right yoshi'],
+        'diff yoshi/yoshi': ['left yoshi/right yoshi'],
+        'good kite/kite': ['left kite/left kite', 'right kite/right kite'],
+        'bad kite/kite': ['left kite/right kite'],
+        'good kite/cut': ['left kite/left cut', 'right kite/right cut'],
+        'bad kite/cut': ['left kite/right cut', 'right kite/left cut'],
+        'kite/T': ['left kite/black T', 'left kite/white T', 'right kite/black T', 'right kite/white T'],
+        'good kite/N': ['left kite/right N', 'right kite/left N'],
+        'bad kite/N': ['left kite/left N', 'right kite/right N'],
+        'kite/tie': ['left kite/black tie', 'left kite/white tie', 'right kite/black tie', 'right kite/white tie'],
+        'cut/T': ['left cut/black T', 'left cut/white T', 'right cut/black T', 'right cut/white T'],
+        'good cut/N': ['left cut/left N', 'right cut/right N'],
+        'bad cut/N': ['left cut/right N', 'right cut/left N'],
+        'cut/tie': ['left cut/black tie', 'left cut/white tie', 'right cut/black tie', 'right cut/white tie'],
+        'good cut/cut': ['left cut/left cut', 'right cut/right cut'],
+        'bad cut/cut': ['left cut/right cut'],
+        'good T/T': ['black T/black T', 'white T/white T'],
+        'bad T/T': ['black T/white T'],
+        'T/N': ['black T/left N', 'black T/right N', 'white T/left N', 'white T/right N'],
+        'good T/tie': ['black T/black tie', 'white T/white tie'],
+        'bad T/tie': ['black T/white tie', 'white T/black tie'],
+        'good N/N': ['left N/left N', 'right N/right N'],
+        'bad N/N': ['left N/right N'],
+        'tie/N': ['black tie/left N', 'black tie/right N', 'white tie/left N', 'white tie/right N'],
+        'good tie/tie': ['black tie/black tie', 'white tie/white tie'],
+        'bad tie/tie': ['black tie/white tie']
+    };
+
+    /**
+     * CORNERS: possible OBLP corner memo
+     */
+    static CORNERS = [[''], ['1', '3', '5', '7'], ['13', '15', '17', '35', '37', '57'], ['135', '137', '157', '357'], ['1357']];
+
+    /**
+     * EDGES: possible OBLP edge memo
+     */
+    static EDGES = [[''], ['2', '4', '6', '8'], ['24', '26', '28', '46', '48', '68'], ['246', '248', '268', '468'], ['2468']];
+
+    /**
+     * TOTAL_CORNERS: flat list of CORNERS
+     */
+    static TOTAL_CORNERS = ['', '1', '3', '5', '7', '13', '15', '17', '35', '37', '57', '135', '137', '157', '357', '1357'];
+
+    /**
+     * TOTAL_EDGES: flat list of EDGES
+     */
+    static TOTAL_EDGES = ['', '2', '4', '6', '8', '24', '26', '28', '46', '48', '68', '246', '248', '268', '468', '2468'];
+
+    /**
+     * @param {object} [tempReplacements]: initial manual unkarnifications.
      */
     constructor(tempReplacements = { "meow :3": "meow :3" }) {
         // place to put manual unkarnifications
@@ -275,9 +534,9 @@ export default class SquanLib {
     }
 
     /**
-     * setTempReplacements — replace the entire tempReplacements map.
+     * setTempReplacements: replace the entire tempReplacements map.
      *
-     * @param {Object<string,string>} replacements — the new key→value pairs
+     * @param {Object<string,string>} replacements the new key→value pairs
      * @returns {this}
      */
     setTempReplacements(replacements) {
@@ -286,9 +545,9 @@ export default class SquanLib {
     }
 
     /**
-     * addTempReplacements — merge key→value pairs into tempReplacements.
+     * addTempReplacements: merge key→value pairs into tempReplacements.
      *
-     * @param {Object<string,string>} replacements — pairs to add (overwrites collisions)
+     * @param {Object<string,string>} replacements: pairs to add (overwrites collisions)
      * @returns {this}
      */
     addTempReplacements(replacements) {
@@ -298,16 +557,16 @@ export default class SquanLib {
 
 
     // =========================================================================
-    // SECTION 2 — CORE UTILITIES
+    // SECTION 2: CORE UTILITIES
     // =========================================================================
 
     /**
-     * dictReplace — repeatedly applies every key→value substitution in `dict`
+     * dictReplace: repeatedly applies every key→value substitution in `dict`
      * to `str` until the string stabilizes.
      *
-     * @param {string} str — the string to be replaced
-     * @param {object} dict — the dictionary
-     * @returns {string} — the fully replaced string
+     * @param {string} str the string to be replaced
+     * @param {object} dict the dictionary
+     * @returns {string} the fully replaced string
      */
     dictReplace(str, dict) {
         const pattern = new RegExp(
@@ -320,7 +579,7 @@ export default class SquanLib {
     }
 
     /**
-     * addCommas — e.g. "2-1" → "2,-1"
+     * addCommas: e.g. "2-1" → "2,-1"
      *
      * length 1 → "N,0"
      * length 2 → starts with '-'? "-N,0" : "A,B"
@@ -328,11 +587,11 @@ export default class SquanLib {
      * length 4 → "AB,CD"
      * anything else that is not all-digits/minus → pass through unchanged
      *
-     * @param {string} alg — the scramble, single space separated. can have commas already.
-     * @returns {string} — the scramble, with commas added
+     * @param {string} alg the scramble, any separator (no additional spaces). can have commas already.
+     * @returns {string} the scramble, with commas added
      */
     addCommas(alg) {
-        return alg.split(' ').map(move => {
+        return alg.split(/[/\\| ]/).map(move => {
             if (!move || isNaN(Number(move.replaceAll('-', ''))) || move.includes(","))
                 return move;
             switch (move.length) {
@@ -348,36 +607,50 @@ export default class SquanLib {
     }
 
     /**
-     * isKarn — returns true if the string uses any letters
+     * isKarn: returns true if the string uses any letters
      *
-     * @param {string} str — the alg
-     * @returns {boolean} — whether the alg contains letters
+     * @param {string} str the alg
+     * @returns {boolean} whether the alg contains letters
      */
     isKarn(str) {
         return /[a-zA-Z]/.test(str);
     }
 
     /**
-     * getAlignment — turns topA and bottomA into a starting move
+     * getAlignmentMove: turns topA and bottomA into a starting move
      *
-     * @param {boolean} topA — top misalign?
-     * @param {boolean} bottomA — bottom misalign?
-     * @returns {string} — e.g. "10", "1-1"
+     * @param {boolean} topA top misalign?
+     * @param {boolean} bottomA bottom misalign?
+     * @returns {string} e.g. "10", "1-1"
      */
-    getAlignment(topA, bottomA) {
+    getAlignmentMove(topA, bottomA) {
         return (topA ? '1' : '0') + (bottomA ? '-1' : '0');
+    }
+
+    /**
+     * getAlignment: turns a starting/ending move into topA and bottomA
+     *
+     * @param {string} m the move
+     * @returns {topA: top misalign?, bottomA: bottom misalign?}}
+     */
+    getAlignment(m) {
+        if (!m) return { topA: false, bottomA: false } // this is just a 00 move
+        m = this.addCommas(m);
+        if (!m.includes(",")) throw new Error("getAlignment: move is weird: " + m);
+        const [u, d] = m.split(",");
+        return { topA: u !== "0", bottomA: d !== "0" }
     }
 
 
     // =========================================================================
-    // SECTION 3 — UNKARNIFY PIPELINE
+    // SECTION 3: UNKARNIFY PIPELINE
     // =========================================================================
 
     /**
-     * unkarnifyHelp — does the actual unkarnifying
+     * unkarnifyHelp: does the actual unkarnifying
      *
-     * @param {string} alg — the alg
-     * @returns {string} — surface-level unkarnified alg
+     * @param {string} alg the alg
+     * @returns {string} surface-level unkarnified alg
      */
     unkarnifyHelp(alg) {
         // trim and replace random ass characters
@@ -427,11 +700,11 @@ export default class SquanLib {
     }
 
     /**
-     * unkarnify — master karn → WCA
+     * unkarnify: master karn → WCA
      * basically unkarnifyHelp + replaceShorthand with bling blings
      *
-     * @param {string} alg — the alg to be unkarnified
-     * @returns {string} — unkarnified alg, duh
+     * @param {string} alg the alg to be unkarnified
+     * @returns {string} unkarnified alg, duh
      */
     unkarnify(alg) {
         // overrides
@@ -474,11 +747,11 @@ export default class SquanLib {
     }
 
     /**
-     * replaceShorthands — replace shorthands (bjj, fv, kk, …) in an alg,
+     * replaceShorthands: replace shorthands (bjj, fv, kk, …) in an alg,
      * tracking alignment state to choose the correct shorthand.
      *
-     * @param {string} alg — the alg
-     * @returns {string} — the alg with shorthands replaced... guys jsdoc is sometimes dumb
+     * @param {string} alg the alg
+     * @returns {string} the alg with shorthands replaced... guys jsdoc is sometimes dumb
      */
     replaceShorthands(alg) {
         const moves = alg.split(/[\/\\\|]/);
@@ -495,7 +768,7 @@ export default class SquanLib {
             if (!move) continue;
 
             if (move.includes(',')) {
-                // Numeric turn — update alignment tracker.
+                // Numeric turn: update alignment tracker.
                 const [u, d] = move.split(',');
                 if (parseInt(u, 10) % 3 !== 0) topA = !topA;
                 if (parseInt(d, 10) % 3 !== 0) bottomA = !bottomA;
@@ -503,11 +776,11 @@ export default class SquanLib {
                 // shorthand
                 const key = SquanLib.alignmentIndependent.has(move.toLowerCase())
                     ? move.toLowerCase()
-                    : move.toLowerCase() + this.getAlignment(topA, bottomA);
+                    : move.toLowerCase() + this.getAlignmentMove(topA, bottomA);
 
                 const replacement = SquanLib.shorthandToKarn[key];
                 if (replacement === undefined)
-                    throw new Error(`replaceShorthands: "${move}" with alignment ${this.getAlignment(topA, bottomA)} is not defined.`);
+                    throw new Error(`replaceShorthands: "${move}" with alignment ${this.getAlignmentMove(topA, bottomA)} is not defined.`);
 
                 alg = alg.replace(move, replacement);
 
@@ -527,11 +800,11 @@ export default class SquanLib {
 
 
     // =========================================================================
-    // SECTION 4 — SCRAMBLE / ALG UTILITIES
+    // SECTION 4: SCRAMBLE / ALG UTILITIES
     // =========================================================================
 
     /**
-     * parseScramble — tokenizes a WCA squan scramble
+     * parseScramble: tokenizes a WCA squan scramble
      *
      * @param {string} alg the alg
      * @returns {{ type: string, top?: number, bottom?: number }[]} after parsing
@@ -556,7 +829,7 @@ export default class SquanLib {
     }
 
     /**
-     * twist — does a slice on a hex string
+     * twist: does a slice on a hex string
      *
      * @param {string} tlHex top layer hex, from UFL clockwise
      * @param {string} blHex bottom layer hex, from DF clockwise
@@ -569,19 +842,30 @@ export default class SquanLib {
     }
 
     /**
-     * cycleLeft — rotate a hex string left by `places` positions (mod 12).
+     * doSlice: does a slice on a CSP-style OBL cube. throws error if unsliceable.
      *
-     * @param {string} hex 12-char hex
-     * @param {number} places how much to shift left by
-     * @returns {string} the shifted string
+     * @param {string} cube the CSP-style "BbWw" cube
+     * @returns {string} the cube post-slice, if sliceable
      */
-    cycleLeft(hex, places) {
-        const n = ((places % 12) + 12) % 12;
-        return hex.slice(n) + hex.slice(0, n);
+    doSlice(cube) {
+        const [UR, UL, DR, DL] = [
+            cube.slice(0, SquanLib.HALF_L),
+            cube.slice(SquanLib.HALF_L, SquanLib.LAYERL),
+            cube.slice(SquanLib.LAYERL, SquanLib.THREE_FOUR_L),
+            cube.slice(SquanLib.THREE_FOUR_L, SquanLib.CUBEL)
+        ];
+        const isUP = (char) => char === char.toUpperCase();
+        const canSlice = (halfLayer) => (
+            !isUP(halfLayer.at(0)) || isUP(halfLayer.at(1)) &&
+            !isUP(halfLayer.at(-1)) || isUP(halfLayer.at(-2))
+        );
+        if (!([UR, UL, DR, DL].map(canSlice).every(Boolean)))
+            throw new Error("doSlice: unsliceable position encountered");
+        return DR + UL + UR + DL;
     }
 
     /**
-     * algToHex — get the hex state that the alg generates
+     * algToHex: get the hex state that the alg generates
      *
      * @param {string} alg an alg. karn is accepted.
      * @returns {tlHex: string, blHex: string} the hex
@@ -593,15 +877,48 @@ export default class SquanLib {
             if (move.type === 'twist') {
                 ({ tlHex, blHex } = this.twist(tlHex, blHex));
             } else {
-                tlHex = this.cycleLeft(tlHex, move.top);
-                blHex = this.cycleLeft(blHex, move.bottom);
+                tlHex = this.shift(tlHex, -move.top);
+                blHex = this.shift(blHex, -move.bottom);
             }
         }
         return { tlHex, blHex };
     }
 
     /**
-     * invertScramble — reverses a scramble
+     * doMoves: does moves on a cube
+     *
+     * @param {string} ms the moves. karn accepted.
+     * @param {string} s the starting CSP-styled cube. leave to use the solved OBL state
+     * @returns {string} the cube post-moves
+     */
+    doMoves(ms, s) {
+        if (s === undefined) s = SquanLib.SOLVED;
+        for (const tok of this.unkarnify(ms).split('/')) {
+            const m = tok.trim();
+            if (m !== '') {
+                const [u, d] = m.split(',').map(Number);
+                s = this.moveCube(s, u, d);
+            }
+            s = this.doSlice(s);
+        }
+        return this.doSlice(s);
+    }
+
+    /**
+     * moveCube: does a move on a CSP-style cube
+     *
+     * @param {string} cube the CSP-style cube
+     * @param {number} u the U move
+     * @param {number} d the D move
+     * @returns {string} the cube post-move
+     */
+    moveCube(cube, u, d) {
+        return this.shift(cube.slice(0, SquanLib.LAYERL), u) +
+            this.shift(cube.slice(SquanLib.LAYERL), d);
+    }
+
+    /**
+     * invertScramble: reverses a scramble
      *
      * @param {string} alg the alg. karn is accepted.
      * @returns {string} the reversed alg
@@ -623,7 +940,7 @@ export default class SquanLib {
     }
 
     /**
-     * isPBL — check if a hex is PBL
+     * isPBL: check if a hex is PBL
      *
      * @param {string} hex
      * @returns {boolean} whether it's a PBL
@@ -682,11 +999,11 @@ export default class SquanLib {
 
 
     // =========================================================================
-    // SECTION 5 — KARNIFY  (WCA → karn)
+    // SECTION 5: KARNIFY  (WCA → karn)
     // =========================================================================
 
     /**
-     * karnify — converts WCA to karn.
+     * karnify: converts WCA to karn.
      *
      * 1. assert that no two slices are next to each other and it's fully numeric
      * 2. compute any startingSlice and endingSlice
@@ -696,8 +1013,8 @@ export default class SquanLib {
      * 5. join back into an alg while reattaching leading/trailing slices,
      *    and dictReplace for high karns
      *
-     * @param {string} alg  — WCA format
-     * @returns {string}         — karn
+     * @param {string} alg WCA format
+     * @returns {string} karn
      */
     karnify(alg) {
         alg = alg.trim();
@@ -727,14 +1044,14 @@ export default class SquanLib {
 
 
     // =========================================================================
-    // SECTION 6 — MOVE MATH & SEQUENCE OPTIMIZER
+    // SECTION 6: MOVE MATH & SEQUENCE OPTIMIZER
     // =========================================================================
 
     /**
-     * legalMove — normalizes a raw turn value into the canonical squan range [−5, 6].
+     * legalMove: normalizes a raw turn value into the canonical squan range [−5, 6].
      *
-     * @param {number} m  — raw turn value, e.g. −7 or 9
-     * @returns {number}   — normalized value in [−5, 6]
+     * @param {number} m raw turn value, e.g. −7 or 9
+     * @returns {number} normalized value in [−5, 6]
      */
     legalMove(m) {
         m = m % 12; // get a range from -11 to 11
@@ -744,7 +1061,7 @@ export default class SquanLib {
     }
 
     /**
-     * addMoves — adds two move strings component-wise and legalizes each result.
+     * addMoves: adds two move strings component-wise and legalizes each result.
      *
      * Tolerates "A"/"a" alignment markers. When one operand is an alignment
      * marker and the other is a move, the marker is flipped iff the top
@@ -752,8 +1069,8 @@ export default class SquanLib {
      * The above assumes that the move is in-CS.
      * Both operands cannot simultaneously be alignment markers.
      *
-     * @param {string} move1  — "top,bot" string, OR "A"/"a" alignment marker
-     * @param {string} move2  — "top,bot" string, OR "A"/"a" alignment marker
+     * @param {string} move1 "top,bot" string, OR "A"/"a" alignment marker
+     * @param {string} move2 "top,bot" string, OR "A"/"a" alignment marker
      * @returns {string}
      *
      * @example
@@ -783,11 +1100,11 @@ export default class SquanLib {
     }
 
     /**
-     * changesAlignment — check if performing this turn value changes the
+     * changesAlignment: check if performing this turn value changes the
      * alignment state (i.e. the turn is not a multiple of 3). Assumes everything
      * is in CS.
      *
-     * @param {number} m  — top-layer turn value,
+     * @param {number} m top-layer turn value,
      * @returns {boolean}
      */
     changesAlignment(m) {
@@ -795,7 +1112,7 @@ export default class SquanLib {
     }
 
     /**
-     * optimize — replaces known optimizable moves (the OPTIM table) in a WCA alg
+     * optimize: replaces known optimizable moves (the OPTIM table) in a WCA alg
      *
      * 1. if no more optimization can be done, exit.
      * 2. split on "/" into an array
@@ -807,8 +1124,8 @@ export default class SquanLib {
      *      the last into the succeeding move, and replace the inners
      * 6. restart the outer loop after any change
      *
-     * @param {string} alg  — slash-separated WCA alg, e.g. "A/-3,0/3,3/3,3/a"
-     * @returns {string}    — optimized alg
+     * @param {string} alg slash-separated WCA alg, e.g. "A/-3,0/3,3/3,3/a"
+     * @returns {string} optimized alg
      */
     optimize(alg) {
         const optimKeys = Object.keys(SquanLib.OPTIM);
@@ -856,14 +1173,14 @@ export default class SquanLib {
 
 
     // =========================================================================
-    // SECTION 7 — ERGONOMICS RATING
+    // SECTION 7: ERGONOMICS RATING
     // =========================================================================
 
     /**
-     * getMoveValue — look up the ergonomic cost of a single move.
-     * @param {boolean} startA   — is it top misalign right now?
-     * @param {boolean} upslice  — is this an upslice?
-     * @param {string}  move     — e.g. "3,0"
+     * getMoveValue: look up the ergonomic cost of a single move.
+     * @param {boolean} startA is it top misalign right now?
+     * @param {boolean} upslice is this an upslice?
+     * @param {string}  move e.g. "3,0"
      * @returns {number}
      */
     getMoveValue(startA, upslice, move) {
@@ -884,8 +1201,8 @@ export default class SquanLib {
     }
 
     /**
-     * getOverwork — calculates how much overwork is present in an alg, along with bonus.
-     * @param {string[]} moves  — array of "top,bot" strings (interior moves only)
+     * getOverwork: calculates how much overwork is present in an alg, along with bonus.
+     * @param {string[]} moves array of "top,bot" strings (interior moves only)
      * @returns {{ movement: number, bonus: number }}
      */
     getOverwork(moves) {
@@ -910,7 +1227,9 @@ export default class SquanLib {
             const isLeft = (t === 6 || t < 0);
             if (isLeft) {
                 streak++;
-                closestMov += Math.abs(SquanLib.CLOSEST_MAP.get(t) ?? 0);
+                if (!SquanLib.CLOSEST_MAP.has(t))
+                    throw new Error("getOverwork: top move is weird: " + t)
+                closestMov += Math.abs(SquanLib.CLOSEST_MAP.get(t));
                 buffer += Math.abs(t);
                 // has streak and nontrivial move → penalize
                 if (streak > 1 && closestMov > 3) { movement += buffer; buffer = 0; }
@@ -923,7 +1242,9 @@ export default class SquanLib {
             const isLeft = b > 0;
             if (isLeft) {
                 streak++;
-                closestMov += Math.abs(SquanLib.CLOSEST_MAP.get(b) ?? 0);
+                if (!SquanLib.CLOSEST_MAP.has(b))
+                    throw new Error("getOverwork: top move is weird: " + b)
+                closestMov += Math.abs(SquanLib.CLOSEST_MAP.get(b));
                 buffer += Math.abs(b);
                 if (streak > 1 && closestMov > 3) { movement += buffer; buffer = 0; }
             } else { streak = 0; closestMov = 0; buffer = 0; }
@@ -939,11 +1260,11 @@ export default class SquanLib {
     }
 
     /**
-     * rateAlg — ergonomic rating for a single in CS squan alg
+     * rateAlg: ergonomic rating for a single in CS squan alg
      *
-     * @param {string}  algRaw         — raw alg (karn or WCA)
-     * @param {boolean} initialTopA    — if the alg starts top misalign
-     * @param {object}  [weights]      — override default weight constants
+     * @param {string}  algRaw raw alg (karn or WCA)
+     * @param {boolean} initialTopA if the alg starts top misalign
+     * @param {object}  [weights] override default weight constants
      * @returns {{ score: number, sliceStart: string }}
      *   sliceStart: '/' (prefer upslice), '\' (prefer downslice), or ' ' (no preference)
      */
@@ -1009,10 +1330,10 @@ export default class SquanLib {
     }
 
     /**
-     * rateAndSort — rate a list of algs and return them sorted by ergonomics high to low
+     * rateAndSort: rate a list of algs and return them sorted by ergonomics high to low
      *
-     * @param {string[]} algLines     — raw alg strings
-     * @param {string}   [posHex=''] — position hex (used to determine initialTopA)
+     * @param {string[]} algLines raw alg strings
+     * @param {string}   [posHex=''] position hex (used to determine initialTopA)
      * @returns {{ alg: string, score: number }[]}
      */
     rateAndSort(algLines, posHex = '') {
@@ -1044,5 +1365,430 @@ export default class SquanLib {
 
             return result;
         }).sort((a, b) => b.score - a.score);
+    }
+
+    // =========================================================================
+    // SECTION 8: ALG TRANSFORM
+    // =========================================================================
+
+    /**
+     * sepIndex: helper to identify where the D move starts in a move without comma
+     *
+     * @param {string} a a move without commas, e.g. "3-3"
+     * @returns {number} the 0-based index of the start of the D move
+     * @example "3-3" → 1
+     */
+    sepIndex(a) {
+        let inx = 0;
+        for (const ch of a) { inx++; if (/\d/.test(ch)) break; }
+        return inx;
+    }
+
+    /**
+     * compl: get the complement of a move
+     *
+     * @param {string} a a move without commas, e.g. "-12"
+     * @returns {string} the complement move
+     * @example "-12" → "5-4"
+     */
+    compl(a) {
+        if (!a) return a;
+        const inx = this.sepIndex(a);
+        return String(this.legalMove(6 + parseInt(a.slice(0, inx), 10))) +
+            String(this.legalMove(6 + parseInt(a.slice(inx), 10)));
+    }
+
+    /**
+     * lf: get the layer flip of a move
+     *
+     * @param {string} a a move without commas, e.g. "-12"
+     * @returns {string} the layer flip move
+     * @example "-12" → "2-1"
+     */
+    lf(a) {
+        if (!a) return a;
+        const inx = this.sepIndex(a);
+        return a.slice(inx) + a.slice(0, inx);
+    }
+
+    /**
+     * compact: parse any input format into space-separated no-comma compact
+     * segments, e.g. "30 -33 30". uses full unkarnify for karn input.
+     *
+     * @param {string} algIn the inputted alg. any input format
+     * @returns {string} the compact format
+     */
+    compact(algIn) {
+        let alg = algIn
+            .replace(/\[.*?\]/g, "")
+            .replace(/[()]/g, "")
+            .replaceAll(" ", "").trim();
+        if (this.isKarn(alg)) {
+            const numeric = this.unkarnify(alg);
+            return numeric.split("/").filter(Boolean).map(m => {
+                if (!m.includes(","))
+                    throw new Error(
+                        `algToInternal: m doesn't have commas post karnifying: ${m}`
+                    )
+                const [u, d] = m.split(",");
+                return String(this.legalMove(parseInt(u, 10))) +
+                    String(this.legalMove(parseInt(d, 10)));
+            }).join(" ");
+        }
+        alg = alg.trim();
+        if (alg.includes("/")) {
+            return alg.split("/").filter(Boolean).map(m => {
+                if (!m.includes(",")) m = this.addCommas(m);
+                if (!m.includes(","))
+                    throw new Error(
+                        `algToInternal: m doesn't have commas post addComma: ${m}`
+                    )
+                const [u, d] = m.split(",");
+                return String(this.legalMove(parseInt(u, 10))) +
+                    String(this.legalMove(parseInt(d, 10)));
+            }).join(" ");
+        }
+        return alg.split(" ").filter(p => p).map(m => {
+            const p = m.includes(",")
+                ? m.split(",")
+                : [m.slice(0, this.sepIndex(m)), m.slice(this.sepIndex(m))];
+            return String(this.legalMove(parseInt(p[0], 10))) +
+                String(this.legalMove(parseInt(p[1], 10)));
+        }).join(" ");
+    }
+
+    /**
+     * countY2Positions: count the number of possible y2 positions
+     *
+     * @param {string} algIn the alg
+     * @returns {number} how many positions the alg can y2 at
+     */
+    countY2Positions(algIn) {
+        const segs = this.compact(algIn).split(" ").filter(p => p);
+        return Math.max(0, segs.length - 3);
+    }
+
+    /**
+     * applyY2s: y2 an alg at a list of specified slices, and give comments
+     *
+     * @param {string} algIn the alg
+     * @param {number[]} lfLst the list of slice positions to y2 at
+     * @param {boolean} k whether to output as karn, leave to use input format
+     * @returns {string} the y2'ed alg, plus comments
+     */
+    applyY2s(algIn, lfLst, k = null) {
+        let alg = algIn.replaceAll(/\[.*?\]/g, "").trim();
+        if (!lfLst) lfLst = [];
+
+        const ki = this.isKarn(alg);
+        const kOut = k === null ? ki : k;
+
+        alg = this.unkarnify(algIn);
+        let alst = alg.split("/");
+
+        // save for alignment-changes check
+        const firstMove = alst[0];
+        const lastMove = alst[alst.length - 1];
+
+        // Apply explicit y2s to interior moves
+        let lfing = false, facingD = false;
+        for (let i = 1; i <= alst.length - 3; i++) {
+            let m = alst[i];
+            m = facingD ? this.lf(m) : m;
+            if (lfLst.includes(i)) { m = this.compl(m); lfing = !lfing; }
+            facingD = lfing ? !facingD : facingD;
+            alst[i] = m;
+        }
+
+        // fix last interior move
+        const lastIntIdx = alst.length - 2;
+        if (facingD) alst[lastIntIdx] = this.lf(alst[lastIntIdx]);
+        if (lfing !== facingD) alst[lastIntIdx] = this.compl(alst[lastIntIdx]);
+        const lastIntMove = alst[lastIntIdx];
+
+        // add commas to all moves
+        for (let i = 0; i < alst.length; i++) alst[i] = this.addCommas(alst[i]);
+        alg = alst.join('/');
+
+        // build comment
+        let comment = "";
+        if (lastIntMove && !SquanLib.GOOD_FINISHES.has(lastIntMove))
+            comment += ' (bad finish)';
+        const { topA: topAstart, bottomA: bottomAstart } = this.getAlignment(firstMove);
+        const { topA: topAend, bottomA: bottomAend } = this.getAlignment(lastMove);
+        if (topAstart !== bottomAstart &&
+            topAstart !== topAend &&
+            topAend !== bottomAend)
+            comment += ' (alignment changes in CS)';
+
+        if (kOut) {
+            alg = this.karnify(alg);
+        }
+
+        return alg + comment;
+    }
+
+    // =========================================================================
+    // SECTION 9: OBL and OBLP Utilities
+    // =========================================================================
+
+    /**
+     * layerFlip: give the layer flipped state of a CSP-style OBL state
+     *
+     * @param {string} state an OBL state of however long
+     * @returns {string} the layer flip of that
+     */
+    layerFlip(state) {
+        const layerFlipMap = { 'b': 'w', 'B': 'W', 'w': 'b', 'W': 'B' };
+        return [...state].map(c => {
+            if (c in layerFlipMap) return layerFlipMap[c];
+            throw new Error("layerFlip: unrecognized character: " + c)
+        }).join('');
+    }
+
+    /**
+     * shift: basically does a move on a layer
+     *
+     * @param {string} a CSP-style (layer) state
+     * @param {number} amount the move. literally. cw = positive
+     * @returns {string} the state after the move
+     */
+    shift(a, amount) {
+        amount = ((-amount % a.length) + a.length) % a.length;
+        return a.slice(amount) + a.slice(0, amount);
+    }
+
+    /**
+     * oblName: turns a possibleOBL array into a string
+     *
+     * @param {string[]} obl a possibleOBL-style array
+     * @returns {string} the actual OBL name
+     */
+    oblName(obl) {
+        return obl[0] ? `${obl[0]} ${obl[1]}/${obl[2]}` : `${obl[1]}/${obl[2]}`;
+    }
+
+    /**
+     * layerFlipName: layer flips an OBL name
+     *
+     * @param {string} obl an unspecific OBL name
+     * @returns {string} the layer flipped version
+     * @example "good bunny/thumb" → "good thumb/bunny"
+     */
+    layerFlipName(obl) {
+        obl = obl.replace('/', ' ');
+        const parts = obl.split(' ');
+        if (parts.length === 2) return parts[1] + '/' + parts[0];
+        return parts[0] + ' ' + parts[2] + '/' + parts[1];
+    }
+
+    /**
+     * speToNonSpe: get the nonspecific OBL of a specific one
+     *
+     * @param {string} obl the specific obl
+     * @returns {string} the unspecific obl
+     */
+    speToNonSpe(obl) {
+        const [uObl, dObl] = obl.split('/');
+        const u = uObl.split(' ').pop();
+        const d = dObl.split(' ').pop();
+        const candidates = SquanLib.POSSIBLE_OBL
+            .filter(c => c.includes(u) && c.includes(d))
+            .map(c => this.oblName(c));
+        for (const cand of candidates) {
+            const specials = SquanLib.OBL_TRANSLATION[cand] || [];
+            for (const spe of specials) {
+                if (spe === obl) return cand;
+                const [s1, s2] = spe.split('/');
+                if (`${s2}/${s1}` === obl) return this.layerFlipName(cand);
+            }
+        }
+        throw new Error(`speToNonSpe: No non-specific OBL found for: ${obl}`);
+    }
+
+    /**
+     * isOBLCase: checks if a CSP-style OBL state is an OBL
+     *
+     * @param {string} l the CSP-style state
+     * @param {string} target the OBL name (one layer)
+     * @returns {number | boolean} the angle offset, 1-4, or false
+     */
+    isOBLCase(l, target) {
+        const targetPattern = Object.entries(SquanLib.OBLToEnglish)
+            .find(([, v]) => v === target
+        )?.[0];
+        if (!targetPattern) return false;
+        // to corner first
+        if (l[0] !== l[0].toUpperCase()) l = this.shift(l, -1);
+        for (let m = 0; m < 4; m++) {
+            if (targetPattern === this.shift(l, -3 * m)) return m;
+        }
+        const noTT = !['T', 'tie'].includes(target.split(' ').pop());
+        if (noTT) {
+            // free to change the color
+            const fl = this.layerFlip(l);
+            for (let m = 0; m < 4; m++) {
+                if (targetPattern === this.shift(fl, -3 * m)) return m;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * layerToOBL: convert a CSP-style "BbWw" layer to the OBL name and angle offset
+     *
+     * @param {string} layer CSP-style OBL layer
+     * @returns {{obl: string, angleOffset: number}} the obl and and angle offset
+     */
+    layerToOBL(layer) {
+        for (const obl of Object.keys(SquanLib.OBLToState))
+            if (this.isOBLCase(layer, obl))
+                return { obl, angleOffset: this.isOBLCase(layer, obl) };
+        throw new Error('layerToOBL: no OBL matched layer: ' + layer);
+    }
+
+
+
+    /**
+     * getAngle: get the angle from the OBL cases and angle offsets
+     *
+     * @param {string} u new naming U layer OBL
+     * @param {string} d new naming D layer OBL
+     * @param {number} au U layer angle offset
+     * @param {number} ad D layer angle offset
+     * @returns {string} the angle inside a <>
+     * @example "left pair", "right arrow", "1", "2" → "DL DL"
+     */
+    getAngle(u, d, au, ad) {
+        let uAngle = SquanLib.OBL_ANGLES[u];
+        let dAngle = SquanLib.OBL_ANGLES[d];
+        for (let i = 0; i < au % 4; i++) uAngle = SquanLib.nextAngle[uAngle];
+        for (let i = 0; i < ad % 4; i++) dAngle = SquanLib.nextAngle[dAngle];
+        return `${uAngle} ${dAngle}`;
+    }
+
+    /**
+     * cubeToSpe: convert an OBL cube state to the OBL of the layers and their
+     * angle offset
+     *
+     * @param {string} state the CSP-style OBL cube state
+     * @returns {[{obl: string, angleOffset: number}, {obl: string, angleOffset: number}]}
+     * the result
+     */
+    cubeToSpe(state) {
+        return [
+            this.layerToOBL(state.slice(0, SquanLib.LAYERL)),
+            this.layerToOBL(state.slice(SquanLib.LAYERL))
+        ];
+    }
+
+    /**
+     * getOBLLen: get the optimal slicecount for the OBL
+     *
+     * @param {string} o nonspe OBL
+     * @returns {number} optimal slicecount for it
+     * @example "good bunny/thumb" → 4
+     */
+    getOBLLen(o) {
+        if (o in OBL_LEN) return OBL_LEN[o];
+        return OBL_LEN[layer_flip_name(o)];
+    }
+
+    /**
+     * stateToLen: get the optimal slicecount for this CSP-style OBL cube state
+     *
+     * @param {string} u U layer CSP-style OBL state
+     * @param {string} d D layer CSP-style OBL state
+     * @returns {number} the optimal slicecount for the OBL
+     */
+    stateToLen(u, d) {
+        return this.getOBLLen(this.speToNonSpe(u + '/' + d));
+    }
+
+    /**
+     * getOBLNaming: get the new naming from the old naming
+     *
+     * @param {string} u the U layer old naming
+     * @param {string} d the D layer old naming
+     * @returns {string} the matt naming for the case, slash separated
+     * @example "left bunny", "right thumb" → "Uc/Thc"
+     */
+    getOBLNaming(u, d) {
+        return SquanLib.NAMING[u] + '/' + SquanLib.NAMING[d];
+    }
+
+
+    /**
+     * stateToMatt: convert an CSP-style OBL cube state to matt tracing memo
+     *
+     * @param {string} s CSP-style OBL cube state
+     * @returns {string} matt tracing memo for the state
+     */
+    stateToMatt(s) {
+        let u = s.slice(0, SquanLib.LAYERL), d = s.slice(SquanLib.LAYERL);
+        u = (u[0] !== u[0].toLowerCase()) ? this.shift(u, 3) : this.shift(u, 2);
+        d = (d[0] !== d[0].toLowerCase()) ? this.shift(d, 3) : this.shift(d, 2);
+        let mem = '';
+        let p = 1;
+        for (let x = 0; x < SquanLib.LAYERL; x += 3) {
+            // do one "pair" at one time
+            if (u[x] === 'B') mem += p;
+            if (u[x + 2] === 'b') mem += (p + 1);
+            p += 2;
+        }
+        // if it's just the solved state
+        mem = (mem === '') ? '- ' : mem + ' ';
+        p = 1;
+        for (let x = 0; x < SquanLib.LAYERL; x += 3) {
+            if (d[x] === 'B') mem += p;
+            if (d[x + 2] === 'b') mem += (p + 1);
+            p += 2;
+        }
+        return (mem[mem.length - 1] === ' ') ? mem + '-' : mem;
+    }
+
+    /**
+     * mattToLayer: converts one layer matt tracing memo to OBL layer state
+     *
+     * @param {string} m matt tracing memo, one layer
+     * @returns {string} CSP-style OBL layer
+     */
+    mattToLayer(m) {
+        const bw = ['W', 'W', 'w', 'W', 'W', 'w', 'W', 'W', 'w', 'W', 'W', 'w'];
+        for (const ch of m) {
+            const num = parseInt(ch, 10);
+            if (num % 2 !== 0) {
+                // corner
+                bw[Math.floor(num / 2) * 3] = 'B';
+                bw[Math.floor(num / 2) * 3 + 1] = 'B';
+            } else {
+                // edge
+                bw[Math.floor(num / 2) * 3 - 1] = 'b';
+            }
+        }
+        return bw.join('');
+    }
+
+    /**
+     * mattToNonSpe: converts a full matt tracing memo to non specific OBL name
+     *
+     * @param {string} m a full matt tracing memo
+     * @returns {string} a 2-layer nonspecific OBL name
+     */
+    mattToNonSpe(m) {
+        const [u, d] = m.split(' ');
+        return this.speToNonSpe(
+            `${this.layerToOBL(this.mattToLayer(u))}/${this.layerToOBL(this.mattToLayer(d))}`
+        );
+    }
+
+    /**
+     * sortOblp: sort one layer of matt tracing OBLP memo
+     *
+     * @param {string} seq one layer of matt tracing OBLP memo
+     * @returns {string} the sorted memo
+     */
+    sortOblp(seq) {
+        return [...seq].sort().join('');
     }
 }
