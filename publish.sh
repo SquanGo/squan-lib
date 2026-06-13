@@ -20,7 +20,35 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-BUMP="${1:-patch}"
+BUMP="${1:-}"
+
+# --- 0. prompt for bump type if not given on the command line ----------------
+if [[ -z "$BUMP" ]]; then
+    CUR="$(node -p "require('./package.json').version")"
+    next() {
+        node -e "const v=require('./package.json').version.split('.').map(Number);
+            const t='$1';
+            if(t==='major')console.log((v[0]+1)+'.0.0');
+            else if(t==='minor')console.log(v[0]+'.'+(v[1]+1)+'.0');
+            else console.log(v[0]+'.'+v[1]+'.'+(v[2]+1));"
+    }
+    echo "Current version: $CUR"
+    echo "Select version bump:"
+    echo "  1) patch  ($CUR -> $(next patch))"
+    echo "  2) minor  ($CUR -> $(next minor))"
+    echo "  3) major  ($CUR -> $(next major))"
+    echo "  4) none   (publish current $CUR as-is)"
+    echo "  5) custom (type an exact version)"
+    read -rp "Choice [1-5]: " choice
+    case "$choice" in
+        1) BUMP="patch" ;;
+        2) BUMP="minor" ;;
+        3) BUMP="major" ;;
+        4) BUMP="none" ;;
+        5) read -rp "Exact version (e.g. 1.4.2): " BUMP ;;
+        *) echo "✗ Invalid choice." >&2; exit 1 ;;
+    esac
+fi
 
 # --- 1. require a clean tree -------------------------------------------------
 if [[ -n "$(git status --porcelain)" ]]; then
