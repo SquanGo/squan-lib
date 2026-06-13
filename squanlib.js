@@ -1031,10 +1031,22 @@ export default class SquanLib {
         // now go through scramble move by move to apply base karn
         let s = alg.split(" ").filter(Boolean);
         for (let i = 0; i < s.length; i++) {
-            if (i === 0 && !startsSlice) continue;
-            if (i === s.length - 1 && !endsSlice) break;
+            if (i === 0 && !startsSlice) {
+                // even if it's in base karn, we can't karnify
+                s[i] = s[i].replace(",", "");
+                continue;
+            }
+            if (i === s.length - 1 && !endsSlice) {
+                // even if it's in base karn, we can't karnify
+                s[i] = s[i].replace(",", "");
+                break;
+            }
             // good to replace
-            s[i] = SquanLib.wcaToBaseKarn[s[i]] ? SquanLib.wcaToBaseKarn[s[i]] : s[i].replace(",", "");
+            let inBaseKarn = s[i] in SquanLib.wcaToBaseKarn;
+            s[i] = inBaseKarn ? SquanLib.wcaToBaseKarn[s[i]] : s[i].replace(",", "");
+            // prevent an additional leading slice for first move karn
+            if (inBaseKarn && i === 0) startingSlice = startingSlice.replace("/", "");
+            if (inBaseKarn && i === s.length - 1) endingSlice = "";
         }
 
         alg = startingSlice + s.join(" ") + endingSlice;
