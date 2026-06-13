@@ -20,6 +20,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+npm login
+
 BUMP="${1:-}"
 
 # --- 0. prompt for bump type if not given on the command line ----------------

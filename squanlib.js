@@ -1291,15 +1291,17 @@ export default class SquanLib {
         let isTopA = false, oddSlice = true;
 
         for (let i = 0; i < r.length - 1; i++) {
-            let c = r[i].indexOf(',');
+            let move = r[i]
+            let c = move.indexOf(',');
             if (c === -1) {
-                const m = this.addCommas(r[i]);
+                // if the move is empty, it's 0,0
+                move = move ? this.addCommas(move) : "0,0";
                 c = m.indexOf(',');
                 if (c === -1)
-                    throw new Error(`rateAlg:\nalg: ${algRaw}\nmove: ${r[i]}\nis weird.`)
+                    throw new Error(`rateAlg:\nalg: ${algRaw}\nmove: ${move}\nis weird.`)
             }
-            const t = parseInt(r[i].slice(0, c), 10);
-            if (isNaN(t)) throw new Error(`rateAlg:\nalg: ${algRaw}\nmove: ${r[i]}\nis weird.`)
+            const t = parseInt(move.slice(0, c), 10);
+            if (isNaN(t)) throw new Error(`rateAlg:\nalg: ${algRaw}\nmove: ${move}\nis weird.`)
 
             if (i === 0) {
                 // 1st move: use to determine initial alignment
@@ -1308,8 +1310,8 @@ export default class SquanLib {
                 continue;
             }
 
-            ergoUp += this.getMoveValue(isTopA, oddSlice, r[i]);
-            ergoDown += this.getMoveValue(isTopA, !oddSlice, r[i]);
+            ergoUp += this.getMoveValue(isTopA, oddSlice, move);
+            ergoDown += this.getMoveValue(isTopA, !oddSlice, move);
             isTopA = isTopA !== (t % 3 !== 0);
             oddSlice = !oddSlice;
         }
