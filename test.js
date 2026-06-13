@@ -2,4 +2,4 @@ import SquanLib from './squanlib.js';
 
 const squanlib = new SquanLib();
 
-squanlib.unkarnify("bJJ");
+console.log(squanlib.rateAlg("/3,0/-3,0/"));

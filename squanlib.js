@@ -1296,7 +1296,7 @@ export default class SquanLib {
             if (c === -1) {
                 // if the move is empty, it's 0,0
                 move = move ? this.addCommas(move) : "0,0";
-                c = m.indexOf(',');
+                c = move.indexOf(',');
                 if (c === -1)
                     throw new Error(`rateAlg:\nalg: ${algRaw}\nmove: ${move}\nis weird.`)
             }
