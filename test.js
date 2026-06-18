@@ -2,4 +2,4 @@ import SquanLib from './squanlib.js';
 
 const squanlib = new SquanLib();
 
-console.log(squanlib.unkarnify("A U' d e U' d e e T' A"));
+console.log(squanlib.karnify("-5,0 / 3,0 / 2,-4 / -3,0 / 0,3 / 3,0 / 3,0 / -3,0 / 0,3 / 1,-2 / -3,0 / -1,2 / 1,-2 / -3,-3 / 2,0 "));
