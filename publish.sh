@@ -20,11 +20,18 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# --- 0. require a clean tree -------------------------------------------------
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "✗ Working tree is dirty. Commit or stash your changes first." >&2
+    git status --short >&2
+    exit 1
+fi
+
 npm login
 
 BUMP="${1:-}"
 
-# --- 0. prompt for bump type if not given on the command line ----------------
+# --- 1. prompt for bump type if not given on the command line ----------------
 if [[ -z "$BUMP" ]]; then
     CUR="$(node -p "require('./package.json').version")"
     next() {
@@ -50,13 +57,6 @@ if [[ -z "$BUMP" ]]; then
         5) read -rp "Exact version (e.g. 1.4.2): " BUMP ;;
         *) echo "✗ Invalid choice." >&2; exit 1 ;;
     esac
-fi
-
-# --- 1. require a clean tree -------------------------------------------------
-if [[ -n "$(git status --porcelain)" ]]; then
-    echo "✗ Working tree is dirty. Commit or stash your changes first." >&2
-    git status --short >&2
-    exit 1
 fi
 
 # --- 2. bump version (creates a commit + tag, unless 'none') -----------------

@@ -547,7 +547,8 @@ export default class SquanLib {
     /**
      * oddPLL: PBL faces with parity
      */
-    static oddPLL = ["Adj", "Opp", "pJ", "pN", "Ba", "Bm", "Cl", "Cr", "Da", "Dm",
+    static oddPLL = [
+        "Adj", "Opp", "pJ", "pN", "Ba", "Bm", "Cl", "Cr", "Da", "Dm",
         "Ka", "Km", "M", "Ol", "Or", "Pl", "Pr", "Q", "Sa", "Sm", "W", "X"
     ];
 
@@ -574,16 +575,30 @@ export default class SquanLib {
         Ol: 1, Or: 1, pN: 2, Q: 1, X: 1, Z: 2,
     };
 
+
+    /**
+     * PLL Family: the PLLs that are special (and are their own family)
+     */
+    static PLLFamily = ["-", "Adj", "pJ", "pN", "Opp"];
+
     /**
      * PLLFamilyLen: the length of the PLL family that contains a PLL
-     * e.g. Gal: 4, because ["Gal", "Gol", "Gor", "Gar"] is 4 long
+     * Ga and Go are split.
+     * e.g. Ul: 2, because ["Ul", "Ur"] is 2 long
      */
     static PLLFamilyLen = {
-        "-": 1, Al: 2, Ar: 2, E: 1, F: 1, Gal: 4, Gar: 4, Gol: 4, Gor: 4,
+        "-": 1, Al: 2, Ar: 2, E: 1, F: 1, Gal: 2, Gar: 2, Gol: 2, Gor: 2,
         H: 1, Ja: 2, Jm: 2, Na: 2, Nm: 2, Rl: 2, Rr: 2, T: 1, Ul: 2, Ur: 2,
         V: 1, Y: 1, Z: 1, Adj: 1, Opp: 1, pJ: 1, pN: 1, Ba: 2, Bm: 2, Cl: 2,
         Cr: 2, Da: 2, Dm: 2, Ka: 2, Km: 2, M: 1, Ol: 2, Or: 2, Pl: 2, Pr: 2,
         Q: 1, Sa: 2, Sm: 2, W: 1, X: 1
+    };
+
+    /**
+     * OBLWeights: the weight factor of OBL faces that are not 4
+     */
+    static OBLWeights = {
+        "-": 1, V: 2, F: 2, Q: 1, N: 2,
     };
 
     /**
@@ -1951,26 +1966,58 @@ export default class SquanLib {
     }
 
     // =========================================================================
-    // SECTION 10: Miscellaneous
+    // SECTION 10: Statistics
     // =========================================================================
     /**
-     * getWeight: get the weight factor of a PBL
+     * getPBLWeight: get the weight factor of a PBL
      *
      * @param {string} pbl the PBL, with slashes and optional barflip sign
      * @returns {number} the weight. some power of 2.
      */
-    getWeight(pbl) {
-        const [u, d] = pbl.replace(/[+-]$/, '').split("/");
+    getPBLWeight(pbl) {
+        const [u, d] = pbl.replace(/(?<!\/)[+-]$/, '').split("/");
         return (SquanLib.PBLWeights[u] ?? 4) * (SquanLib.PBLWeights[d] ?? 4);
     }
 
     /**
-     * getPLLCaseCount: multiplies the PLLFamilyLen of the top and bottom case
+     * getPBLCaseCount: multiplies the PLLFamilyLen of the top and bottom case
      *
      * @param {string[]} pbl an array of [u, d] that represents a PBL case
      * @returns {number} the case counts in the family that contanis this PBL
      */
-    getPLLCaseCount(pbl) {
+    getPBLCaseCount(pbl) {
         return SquanLib.PLLFamilyLen[pbl[0]] * SquanLib.PLLFamilyLen[pbl[1]];
+    }
+
+    /**
+     * getPBLFamily: get the family name of a PBL
+     *
+     * @param {string} pbl the PBL, with slashes and optional barflip sign
+     * @returns {string} the PBL family name
+     * @example "Al/Ul" → "A/U"
+     */
+    getPBLFamily(pbl) {
+        const [u, d] = pbl.replace(/(?<!\/)[+-]$/, '').split("/");
+        function getPLLFamily(pll) {
+            if (SquanLib.PLLFamily.includes(pll)) return pll;
+            else if (pll.charAt(0) === "G") return pll.slice(0, 2); // Ga or Go
+            else return pll.match(/[A-Z]/g)?.join(''); // the uppercase portion
+        }
+        return getPLLFamily(u) + "/" + getPLLFamily(d);
+    }
+
+    /**
+     * getOBLWeight: get the weight of a specific OBL
+     *
+     * @param {string} obl new naming OBL, joined by a slash
+     * @returns {number} the weight of the OBL
+     * @example "D/D" → 16
+     * "TH/TH" → 16
+     * "J/V" → 8
+     */
+    getOBLWeight(obl) {
+        const [u, d] = obl.split("/");
+        return (SquanLib.OBLWeights[u.match(/[A-Z]/g)?.join('')] ?? 4) *
+            (SquanLib.OBLWeights[d.match(/[A-Z]/g)?.join('')] ?? 4);
     }
 }
