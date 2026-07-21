@@ -1,6 +1,6 @@
 {
     "name": "squanlib",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "squan helper toolkit",
     "type": "module",
     "main": "./squanlib.js",
