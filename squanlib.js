@@ -687,16 +687,6 @@ export default class SquanLib {
     }
 
     /**
-     * isKarn: returns true if the string uses any letters, excluding A and a
-     *
-     * @param {string} str the alg
-     * @returns {boolean} whether the alg contains letters, excluding A and a
-     */
-    isKarn(str) {
-        return /[b-zB-Z]/.test(str);
-    }
-
-    /**
      * getAlignmentMove: turns topA and bottomA into a starting move
      *
      * @param {boolean} topA top misalign?
@@ -738,8 +728,6 @@ export default class SquanLib {
         // " / " → "/"
         alg = alg.replaceAll(/ ([\/\\\|]) /g, "$1")
         if (/[\/\\\|]{2,}/.test(alg)) throw new Error("unkarnifyHelp: Two slices in a row.");
-
-        if (!this.isKarn(alg)) return alg; // not karn at all
 
         // these can be "", if the alg starts/ends with a slice
         let firstMove, lastMove;
@@ -841,7 +829,7 @@ export default class SquanLib {
 
         // early out: no shorthands
         const allKnown = moves.every(m =>
-            !m || !this.isKarn(m) || (' ' + m + ' ' in SquanLib.karnToWCA)
+            !m || (' ' + m + ' ' in SquanLib.karnToWCA)
         );
         if (allKnown) return this.unkarnifyHelp(alg);
 
@@ -1102,7 +1090,7 @@ export default class SquanLib {
     karnify(alg) {
         alg = alg.trim();
         if (/[\/\\\|]{2,}/.test(alg)) throw new Error("karnify: Two slices in a row.");
-        if (this.isKarn(alg)) throw new Error("karnify: Alg has letters. Try unkarnifying first.")
+        if (/[b-z]/i.test(alg)) throw new Error("karnify: Alg has letters. Try unkarnifying first.")
         let startsSlice = ["/", "\\", "|"].includes(alg.charAt(0));
         let startingSlice = startsSlice ? alg.charAt(0) : "";
         let endsSlice = "/" === alg.at(-1);
@@ -1373,8 +1361,8 @@ export default class SquanLib {
         // strip brackets e.g. "[7|14]"
         let a = algRaw.replace(/\[.*$/, '').trim();
 
-        // unkarnify if needed
-        const numeric = this.isKarn(a) ? this.unkarnify(a) : a.replaceAll(' ', '');
+        // unkarnify
+        const numeric = this.unkarnify(a);
 
         const rawParts = numeric.split('/');
         // keep leading slice for up/downslice, drop trailing slice
@@ -1449,7 +1437,7 @@ export default class SquanLib {
             let sliceStart = ' ';
 
             // Pre-unkarnify so rateAlg always receives a numeric string.
-            const numericAlg = this.isKarn(algOnly) ? this.unkarnify(algOnly) : algOnly;
+            const numericAlg = this.unkarnify(algOnly);
             ({ score: result.score, sliceStart } = this.rateAlg(numericAlg, initialTopA));
             rated = true;
 
@@ -1558,25 +1546,16 @@ export default class SquanLib {
                     String(this.legalMove(parseInt(d, 10)));
             }).join(" ");
         }
-        alg = alg.replaceAll(" ", "");
-        if (alg.includes("/")) {
-            return alg.split("/").filter(Boolean).map(m => {
-                if (!m.includes(",")) m = this.addCommas(m);
-                if (!m.includes(","))
-                    throw new Error(
-                        `algToInternal: m doesn't have commas post addComma: ${m}`
-                    )
-                const [u, d] = m.split(",");
-                return String(this.legalMove(parseInt(u, 10))) +
-                    String(this.legalMove(parseInt(d, 10)));
-            }).join(" ");
-        }
-        return alg.split(" ").filter(p => p).map(m => {
-            const p = m.includes(",")
-                ? m.split(",")
-                : [m.slice(0, this.sepIndex(m)), m.slice(this.sepIndex(m))];
-            return String(this.legalMove(parseInt(p[0], 10))) +
-                String(this.legalMove(parseInt(p[1], 10)));
+        alg = this.unkarnify(alg);
+        return alg.split("/").filter(Boolean).map(m => {
+            if (!m.includes(",")) m = this.addCommas(m);
+            if (!m.includes(","))
+                throw new Error(
+                    `algToInternal: m doesn't have commas post addComma: ${m}`
+                )
+            const [u, d] = m.split(",");
+            return String(this.legalMove(parseInt(u, 10))) +
+                String(this.legalMove(parseInt(d, 10)));
         }).join(" ");
     }
 
@@ -1604,7 +1583,7 @@ export default class SquanLib {
         let alg = algIn.replaceAll(/\[.*?\]/g, "").trim();
         if (!lfLst) lfLst = [];
 
-        const ki = this.isKarn(alg);
+        const ki = /[b-z]/i.test(alg);
         const kOut = k === null ? ki : k;
 
         alg = this.unkarnify(algIn);
