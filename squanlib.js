@@ -96,6 +96,7 @@ export default class SquanLib {
         "fv10": "d4", "fv0-1": "d4'",
         "vf10": "u4", "vf0-1": "u4'",
         "y2fv10": "u d' u -5,4",
+        "pñ10": "E m u2'", "pñ0-1": "E m' d2",
         "jf10": "w D' u T'", "jf0-1": "w' D u' T",
         "fj10": "b U' d t", "fj0-1": "b' U d' t'",
         "jr00": "e' w e", "jr10": "e' b e",
