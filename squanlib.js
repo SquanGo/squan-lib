@@ -80,7 +80,7 @@ export default class SquanLib {
         "jn": "D4'", "nj": "U4",
         "jj": "U e' D", "bjj+e2": "U' e' U'",
         "-nn": "E' E",
-        "-jn": "D4", "-nj": "D4'",
+        "-jn": "D4", "-nj": "U4'",
         // ── alignment-dependent ───────────────────────────────────────────────
         "bpj10": "d m' U", "bpj0-1": "u' m D'",
         "fpj10": "u m' D", "fpj0-1": "d' m U'",
