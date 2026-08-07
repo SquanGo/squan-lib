@@ -1054,7 +1054,8 @@ export default class SquanLib {
      */
     invertScramble(alg) {
         if (!alg) return alg;
-        return this.unkarnify(alg).trim().split('/').reverse().map(part => {
+        const unkarnified = this.unkarnify(alg).trim().replaceAll(/[\\|]/g, "/");
+        return unkarnified.split('/').reverse().map(part => {
             part = part.trim();
             const src = part.includes('(')
                 ? part.match(/\(([^)]+)\)/)?.[1]
