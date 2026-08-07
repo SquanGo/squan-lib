@@ -350,13 +350,20 @@ export default class SquanLib {
         "left yoshi": "UL", "right yoshi": "UR"
     };
 
-    static nextAngle = {
+    static nextAngleOBL = {
         // Single character angles
         "-": "-", "/": "\\", "\\": "/", "—": "|", "|": "—",
         "U": "R", "R": "D", "D": "L", "L": "U",
         // Double character angles
         "UR": "DR", "DR": "DL", "DL": "UL", "UL": "UR"
     };
+
+    static nextAnglePBL = {
+        "": "",
+        "F": "L", "L": "B", "B": "R", "R": "F",
+        "FR": "FL", "FL": "BL", "BL": "BR", "BR": "FR",
+        "LR": "FB", "FB": "LR"
+    }
 
     static get HALF_L() { return 6; }
     static get LAYERL() { return 12; }
@@ -594,6 +601,56 @@ export default class SquanLib {
         Cr: 2, Da: 2, Dm: 2, Ka: 2, Km: 2, M: 1, Ol: 2, Or: 2, Pl: 2, Pr: 2,
         Q: 1, Sa: 2, Sm: 2, W: 1, X: 1
     };
+
+    /**
+     * PBLFaces: the baseline hex and angle for each PBL face
+     */
+    static PBLFaces = {
+    "-": { "hex": "AA1BB2CC3DD45EE6FF7GG8HH", "angle": "" },
+    "Adj": { "hex": "AA2BB1CC3DD46EE5FF7GG8HH", "angle": "FR" },
+    "Al": { "hex": "AA1CC2DD3BB45HH6FF7EE8GG", "angle": "F" },
+    "Ar": { "hex": "CC1AA2BB3DD45FF6HH7GG8EE", "angle": "F" },
+    "Ba": { "hex": "DD4BB1CC3AA26EE7GG5FF8HH", "angle": "F" },
+    "Bm": { "hex": "DD1BB3CC4AA28EE6GG5FF7HH", "angle": "F" },
+    "Cl": { "hex": "DD2BB3CC1AA48EE5GG7FF6HH", "angle": "F" },
+    "Cr": { "hex": "DD3BB1CC2AA46EE8GG7FF5HH", "angle": "F" },
+    "Da": { "hex": "DD2BB4CC3AA17EE5GG6FF8HH", "angle": "F" },
+    "Dm": { "hex": "DD1BB4CC2AA37EE6GG8FF5HH", "angle": "F" },
+    "E": { "hex": "BB1AA2DD3CC45FF6EE7HH8GG", "angle": "LR" },
+    "F": { "hex": "DD3BB2CC1AA45EE8GG7FF6HH", "angle": "F" },
+    "Gal": { "hex": "DD4BB3CC1AA28EE7GG5FF6HH", "angle": "F" },
+    "Gol": { "hex": "DD2BB4CC1AA37EE5GG8FF6HH", "angle": "F" },
+    "Gor": { "hex": "DD3BB4CC2AA17EE8GG6FF5HH", "angle": "F" },
+    "Gar": { "hex": "DD3BB1CC4AA26EE8GG5FF7HH", "angle": "F" },
+    "H": { "hex": "AA3BB4CC1DD27EE8FF5GG6HH", "angle": "" },
+    "Ja": { "hex": "DD4BB2CC3AA15EE7GG6FF8HH", "angle": "F" },
+    "Jm": { "hex": "DD1BB2CC4AA35EE6GG8FF7HH", "angle": "F" },
+    "Ka": { "hex": "DD4BB3CC2AA18EE7GG6FF5HH", "angle": "F" },
+    "Km": { "hex": "DD2BB1CC4AA36EE5GG8FF7HH", "angle": "F" },
+    "M": { "hex": "DD3BB4CC1AA27EE8GG5FF6HH", "angle": "F" },
+    "Na": { "hex": "DD4CC3BB2AA18HH7GG6FF5EE", "angle": "" },
+    "Nm": { "hex": "DD2CC1BB4AA36HH5GG8FF7EE", "angle": "" },
+    "Ol": { "hex": "AA2BB3CC4DD18EE5FF6GG7HH", "angle": "" },
+    "Or": { "hex": "AA4BB1CC2DD36EE7FF8GG5HH", "angle": "" },
+    "Opp": { "hex": "AA1BB4CC3DD27EE6FF5GG8HH", "angle": "LR" },
+    "Pl": { "hex": "DD4BB2CC1AA35EE7GG8FF6HH", "angle": "F" },
+    "Pr": { "hex": "DD3BB2CC4AA15EE8GG6FF7HH", "angle": "F" },
+    "pJ": { "hex": "DD1BB2CC3AA45EE6GG7FF8HH", "angle": "F" },
+    "pN": { "hex": "AA1DD2CC3BB45GG6FF7EE8HH", "angle": "FR" },
+    "Q": { "hex": "DD1CC4BB3AA27HH6GG5FF8EE", "angle": "" },
+    "Rl": { "hex": "DD1BB3CC2AA48EE6GG7FF5HH", "angle": "F" },
+    "Rr": { "hex": "DD2BB1CC3AA46EE5GG7FF8HH", "angle": "F" },
+    "Sa": { "hex": "DD1CC3BB2AA48HH6GG7FF5EE", "angle": "F" },
+    "Sm": { "hex": "DD2CC1BB3AA46HH5GG7FF8EE", "angle": "F" },
+    "T": { "hex": "DD1BB4CC3AA27EE6GG5FF8HH", "angle": "F" },
+    "Ul": { "hex": "AA3BB2CC4DD15EE8FF6GG7HH", "angle": "F" },
+    "Ur": { "hex": "AA4BB2CC1DD35EE7FF8GG6HH", "angle": "F" },
+    "V": { "hex": "CC1BB2AA4DD35EE6HH8GG7FF", "angle": "FR" },
+    "W": { "hex": "AA3BB4CC2DD17EE8FF6GG5HH", "angle": "FR" },
+    "X": { "hex": "DD3CC2BB1AA45HH8GG7FF6EE", "angle": "" },
+    "Y": { "hex": "AA1DD2CC4BB35GG6FF8EE7HH", "angle": "FR" },
+    "Z": { "hex": "AA2BB1CC4DD36EE5FF8GG7HH", "angle": "FR" }
+}
 
     /**
      * OBLWeights: the weight factor of OBL faces that are not 4
@@ -1014,7 +1071,9 @@ export default class SquanLib {
     /**
      * isPBL: check if a hex is PBL
      *
-     * @param {string} hex
+     * @param {Object} hex solved state = 011233455677998bbaddcffe
+     * @param {string} hex.tlHex
+     * @param {string} hex.blHex
      * @returns {boolean} whether it's a PBL
      */
     isPBL(hex) {
@@ -1067,6 +1126,88 @@ export default class SquanLib {
             !bA.includes('f')
         ) return false;
         return true;
+    }
+
+    /**
+     * isSpecificPBL: check if an alg is a specific PBL case at the correct angles
+     *
+     * @param {string} alg an alg that SOLVES the case. karn is accepted.
+     * @param {Object} u the top layer PBL face
+     * @param {Object} d the bottom layer PBL face
+     * @param {string} u.face the face name
+     * @param {string} u.angle the face angle
+     * @param {string} d.face the face name
+     * @param {string} d.angle the face angle
+     * @returns {boolean}
+     */
+    isSpecificPBL(alg, u, d) {
+        const hex = this.doMoves(alg, "AA1BB2CC3DD45EE6FF7GG8HH");
+        const uHex = hex.slice(0, 12);
+        const dHex = hex.slice(12);
+        const uAngle = this.getPBLFaceAngle(uHex, u.face, true);
+        if (uAngle !== u.angle) return false;
+        const dAngle = this.getPBLFaceAngle(dHex, d.face, false);
+        return dAngle === d.angle;
+    }
+
+    /**
+     * getPBLFaceAngle: check if a hex is a specific PBL face at an angle
+     *
+     * @param {string} hex hex string for a layer. A-H are corners.
+     * @param {string} face the target face name
+     * @param {boolean} isTop whether the hex is for the top face
+     * @returns {string|null} the angle of the hex given, null if no match
+     */
+    getPBLFaceAngle(hex, face, isTop) {
+        const isAngle = (hex, target) => {
+            for (let i = 1; i <= 4; i++)
+                if (this.colorShift(hex, i) === target) return true;
+            return false;
+        }
+        // fast forward an angle
+        function fastForward(a, j) {
+            if (j > 0) return fastForward(SquanLib.nextAnglePBL[a], j - 1);
+            else return a;
+        }
+        const baseline = SquanLib.PBLFaces[face];
+        if (!baseline) throw new Error("getPBLFaceAngle: no such face: " + face);
+        const baseHex = isTop ? baseline.hex.slice(0,12) : baseline.hex.slice(12);
+        const baseAngle = baseline.angle;
+        let result = null;
+        // when you do a -3 move on top and it match <F>, the original angle is <L>,
+        // which is fastForward() once.
+        let move = isTop ? -3 : 3;
+        for (let i = 0; i < 4; i++) {
+            if (isAngle(hex, baseHex)) result = fastForward(baseAngle, i);
+            if (result !== null) return result;
+            // if angleless, exit if no result
+            if (!baseAngle) return null;
+            hex = this.shift(hex, move);
+        }
+        return null;
+    }
+
+    /**
+     * colorShift: shift everything up 1
+     *
+     * @param {string} s layer state. A-H are corners.
+     * @param {number} amount how many time to do the color shift by
+     * @example
+     * colorShift("AA1BB3DD2CC4") // "BB2CC4AA3DD1"
+     */
+    colorShift(s, amount) {
+        const wrap = {
+            "E": "A",
+            "I": "E",
+            "5": "1",
+            "9": "5"
+        }
+        for (let i = 0; i < amount; i++)
+            s = [...s].map(char => {
+                let shiftedChar = String.fromCodePoint(char.codePointAt(0) + 1);
+                return wrap[shiftedChar] ?? shiftedChar;
+            }).join('');
+        return s;
     }
 
 
@@ -1815,8 +1956,8 @@ export default class SquanLib {
     getAngle(u, d, au, ad) {
         let uAngle = SquanLib.OBL_ANGLES[u];
         let dAngle = SquanLib.OBL_ANGLES[d];
-        for (let i = 0; i < au % 4; i++) uAngle = SquanLib.nextAngle[uAngle];
-        for (let i = 0; i < ad % 4; i++) dAngle = SquanLib.nextAngle[dAngle];
+        for (let i = 0; i < au % 4; i++) uAngle = SquanLib.nextAngleOBL[uAngle];
+        for (let i = 0; i < ad % 4; i++) dAngle = SquanLib.nextAngleOBL[dAngle];
         return `${uAngle} ${dAngle}`;
     }
 
