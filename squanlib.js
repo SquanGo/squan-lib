@@ -84,6 +84,8 @@ export default class SquanLib {
         // ── alignment-dependent ───────────────────────────────────────────────
         "bpj10": "d m' U", "bpj0-1": "u' m D'",
         "fpj10": "u m' D", "fpj0-1": "d' m U'",
+        "e2bpj10": "d 44 D", "e2bpj0-1": "u' -4-4 U'",
+        "e2fpj10": "u 44 U", "e2fpj0-1": "d' -4-4 D'",
         "aa10": "u m' u T'", "aa0-1": "U m' U t'",
         "fadj10": "D M' d'", "dadj10": "D M' d'",
         "fadj0-1": "U' M u", "u'adj0-1": "U' M u",
